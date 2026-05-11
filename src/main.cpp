@@ -1,18 +1,30 @@
-#include <Arduino.h>
+#include "Arduino.h"
+#include "Modcom.h"
+#include "ModbusReg.h"
 
-// put function declarations here:
-int myFunction(int, int);
+ModbusReg Mdata;
+Modcom mc(Mdata, 0);
+
 
 void setup() {
   // put your setup code here, to run once:
-  int result = myFunction(2, 3);
+  Serial.begin(115200);
+  mc.begin();
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
-}
+  // for (int i = 0; i < outreg; i++) { 
+  //   Mdata.outregs[i] = i;
+  // }
+  for (int i = 0; i < outreg; i++) { 
+    Mdata.outregs[i] = Mdata.inregs[i];
+    //Mdata.outregs[i] = i;
+  }
 
-// put function definitions here:
-int myFunction(int x, int y) {
-  return x + y;
+  for (int i = 0; i < outcoil; i++) {
+    Mdata.outcoils[i] = Mdata.incoils[i];
+  }
+
+  mc.poll();
+  yield();
 }
