@@ -22,29 +22,16 @@ void Modcom::begin() {
 }  
 
 void Modcom::poll() {
-
-      _mb.task();
-
-      
     //Write Data
-    for (int i = 0; i < outreg; i++) {
-        _mb.Hreg(i + mOffset, _data.outregs[i]);
-    }
+    for (int i = 0; i < outreg; i++)  _mb.Hreg(i + mOffset, _data.outregs[i]);
 
-    for (int i = 0; i < outcoil; i++) {
-        _mb.Coil(i + mOffset, _data.outcoils[i]);
-    }
+    for (int i = 0; i < outcoil; i++)   _mb.Coil(i + mOffset, _data.outcoils[i]);
 
-    
+    _mb.task();
 
     //Read Data
-    for (int i = 0; i < inreg; i++) {
-        _data.inregs[i] = _mb.Hreg(i);
-    }
+    for (int i = 0; i < inreg; i++) _data.inregs[i] = _mb.Hreg(i);
 
-    for (int i = 0; i < incoil; i++) {
-        _data.incoils[i] = _mb.Coil(i);
-    }
-
+    for (int i = 0; i < incoil; i++) _data.incoils[i] = _mb.Coil(i);
   
 }
