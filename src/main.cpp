@@ -1,8 +1,4 @@
-#define RateJoint1 1
-#define RateJoint2 1
-#define RateJoint3 1
-#define RateJoint4 1
-
+#include "RobotConfig.h"
 #include "Modcom.h"
 #include "Calc4dof.h"
 #include "Storage.h"
@@ -19,7 +15,7 @@ TaskHandle_t TaskModbus;
 //Stepper control robot 4dof
 FastAccelStepperEngine engine = FastAccelStepperEngine();
 //Angle to step conversion: Steps per Degree
-JointController J1(RateJoint1), J2(RateJoint2), J3(RateJoint3), J4(RateJoint4);
+JointController J1(RATE_JOINT1), J2(RATE_JOINT2), J3(RATE_JOINT3), J4(RATE_JOINT4);
 
 bool flag0 = false;
 bool flag1 = false;
@@ -46,7 +42,7 @@ void ParameterLoad() {
 }
 
 void ModbusTask(void* parameter) {
-  Calc4dof myArm(100.0, 100.0, 30.0, 50.0);
+  Calc4dof myArm(L1, L2, L3, BASE_HEIGHT);
   while (1) {
     long startTime = micros();
 
@@ -99,16 +95,16 @@ void setup() {
   ParameterLoad();
   InitThread();
   engine.init();
-  J1.begin(engine, 32, 33);
-  J2.begin(engine, 25, 26);
-  J3.begin(engine, 27, 14);
-  J4.begin(engine, 13, 19);
-  
+  J1.begin(engine, J1_STEP_PIN, J1_DIR_PIN);
+  J2.begin(engine, J2_STEP_PIN, J2_DIR_PIN);
+  J3.begin(engine, J3_STEP_PIN, J3_DIR_PIN);
+  J4.begin(engine, J4_STEP_PIN, J4_DIR_PIN);
+
   // Set tốc độ/gia tốc cho từng khớp nếu muốn khác nhau
-  J1.setProfile(500, 100);
-  J2.setProfile(500, 100);
-  J3.setProfile(500, 100);
-  J4.setProfile(500, 100);
+  J1.setProfile(DEFAULT_SPEED, DEFAULT_ACCEL);
+  J2.setProfile(DEFAULT_SPEED, DEFAULT_ACCEL);
+  J3.setProfile(DEFAULT_SPEED, DEFAULT_ACCEL);
+  J4.setProfile(DEFAULT_SPEED, DEFAULT_ACCEL);
 }
 
 void loop() {
