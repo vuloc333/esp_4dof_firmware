@@ -1,20 +1,28 @@
 #include "Calc4dof.h"
 
-Calc4dof::Calc4dof(float l1, float l2, float l3, float baseH) 
-    : _baseH(baseH), _fabrik(_lengths, 4) {
-    _lengths[0] = l1; _lengths[1] = l2; _lengths[2] = l3;
-    _fabrik.setTolerance(0.1f);
-    _fabrik.setMaxIterations(20);
-    _fabrik.setBasePosition(NocCore::Vector3(0, 0, 0));
+Calc4dof::Calc4dof(float l1, float l2, float l3, float baseH) : _baseH(baseH) {
+    _lengths[0] = l1; 
+    _lengths[1] = l2; 
+    _lengths[2] = l3;
+    // Khởi tạo FABRIK sau khi đã có chiều dài xương
+    _fabrik = new NocKinematics::FABRIK(_lengths, NumberJoints); 
+    _fabrik->setTolerance(0.1f);
+    _fabrik->setMaxIterations(20);
+    _fabrik->setBasePosition(NocCore::Vector3(0, 0, 0));
 }
 
-bool Calc4dof::computeIK(float tx, float ty, float tz) {
+int Calc4dof::computeIK(float tx, float ty, float tz) {
+    long startTime = micros();
+    //Reset pos
+    NocCore::Vector3 resetPos(0, 0, tz + tx + ty); // Đặt lại vị trí ban đầu để tránh lỗi khi target quá xa
+    _fabrik->solve(resetPos);
+    //Calc Pos
     NocCore::Vector3 localTarget(tx, ty, tz - _baseH);
-    bool solved = _fabrik.solve(localTarget);
-    
+    bool solved = _fabrik->solve(localTarget);
+    //Get Angle
     if (solved) {
         NocCore::Vector3 p[4];
-        for (int i = 0; i < 4; i++) p[i] = _fabrik.getJointPosition(i);
+        for (int i = 0; i < 4; i++) p[i] = _fabrik->getJointPosition(i);
 
         // Tính toán và lưu thẳng vào mảng nội bộ
         _currentAngles[0] = atan2(p[1].y_val, p[1].x_val) * 180.0 / PI; // Base
@@ -31,7 +39,7 @@ bool Calc4dof::computeIK(float tx, float ty, float tz) {
         float aP2P3 = atan2(z[3] - z[2], r[3] - r[2]) * 180.0 / PI;
         _currentAngles[3] = aP2P3 - aP1P2;                             // Wrist
     }
-    return solved;
+    return micros() - startTime; // Trả về thời gian tính toán IK
 }
 
 void Calc4dof::getAnglesArray(float outArray[4]) {
